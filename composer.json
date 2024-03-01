@@ -1,0 +1,24 @@
+{
+    "name": "mohdradzee/waident",
+    "description": "WATech Identity Service consumer and implementation",
+    "license": "Proprietary",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.1"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Mohdradzee\\Waident\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Radzee",
+            "email": "radzee.ar@gmail.com"
+        }
+    ],
+    "require": {}
+}
