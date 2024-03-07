@@ -12,7 +12,7 @@
 <body>
     <div class="container">
         <h1>Test</h1>
-        <a href="http://idserver.develops.local/authenticate?username=tester2">Authenticate flow</a>
+        <a href="https://identity.gwidget.dev/?username=tester2">Authenticate flow</a>
     </div>
 </body>
 </html>
