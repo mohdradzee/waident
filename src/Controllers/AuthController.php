@@ -35,6 +35,6 @@ class AuthController
 
     public function demoInitAuth()
     {
-        return view('waident::index');
+        return view('waident::index',['merchantId'=>config('app.merchant_id')]);
     }
 }
