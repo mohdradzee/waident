@@ -6,9 +6,29 @@ use App\Models\PlayerModel;
 use Auth;
 use Cookie;
 use Illuminate\Http\Request;
+use Mohdradzee\Waident\Requests\PasskeyAuthInitRequest;
 use Util;
 class AuthController
 {
+    /**
+     * checkPlayerUsername
+     * Prior to initiate passkey authentication/registration 
+     * we check whether the player username exists
+     * @param  Request  $request
+     */
+    public function checkPlayerUsername(PasskeyAuthInitRequest $request)
+    {
+        if ($request->ajax()) {
+            try{
+                $player = config('waident.playerModel')::where('wl_player_username',$request->username)->firstOrFail();
+                return response()->json(['username'=>$request->username],200);
+            }catch(\Exception $e){
+                return response()->json(['username'=>$request->username],400);
+            }
+        }
+        return response()->json(['Bad request'], 500);
+    }
+
     /**
      * this is the callback
      */
