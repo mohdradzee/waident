@@ -2,9 +2,7 @@
 namespace Mohdradzee\Waident\Controllers;
 
 use App\Components\Modules\Player\Player;
-use App\Models\PlayerModel;
 use Auth;
-use Cookie;
 use Illuminate\Http\Request;
 use Mohdradzee\Waident\Requests\PasskeyAuthInitRequest;
 use Util;
@@ -21,12 +19,27 @@ class AuthController
         if ($request->ajax()) {
             try{
                 $player = config('waident.playerModel')::where('wl_player_username',$request->username)->firstOrFail();
-                return response()->json(['username'=>$request->username],200);
+                return response()->json($this->createPayload($request->all()),200);//will attempt authentication
             }catch(\Exception $e){
-                return response()->json(['username'=>$request->username],400);
+                return response()->json($this->createPayload($request->all()),400);//will attempt to create new player
             }
         }
         return response()->json(['Bad request'], 500);
+    }
+
+    private function createChallenge($arr):array
+    {
+        $hash = \crypt(\serialize($arr), config('app.merchant_api_salt_key'));
+        return ['hash'=>$hash];
+    }
+
+    private function createPayload($arr):array
+    {
+        $mergingArr = array_merge($arr,['merchantId'=>config('app.merchant_id')],$this->createChallenge($arr));
+        $payload = \base64_encode(\serialize($mergingArr));
+        $test = \base64_decode($payload);
+        $backToArray = \Log::info(\unserialize($test));
+        return ['payload'=>$payload];
     }
 
     /**
