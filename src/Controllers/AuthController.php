@@ -29,7 +29,8 @@ class AuthController
 
     private function createChallenge($arr):array
     {
-        $hash = \crypt(\serialize($arr), config('app.merchant_api_salt_key'));
+        $challenge = array_merge($arr,['timestamp' => \Carbon\Carbon::now()->getTimestamp()]);
+        $hash = \crypt(\serialize($challenge), config('app.merchant_api_salt_key'));
         return ['hash'=>$hash];
     }
 
@@ -78,12 +79,8 @@ class AuthController
                 $displayNav = ! Util::isMobile() ? false : true;
                 return redirect('/');
             }else{
-                dd('failed logn');
+               //failed login
             }
-            // Player::updateLastLoginInfo($player, $request);
-            // Cookie::queue('firstAuthChkForPopup', 1, 1 * 60 * 24);
-            // return redirect('/');
-            // //dd($player);
             return $player;
         }catch(\Exception $e){
             \Log::critical($e);
