@@ -37,8 +37,8 @@ class AuthController
     {
         $mergingArr = array_merge($arr,['merchantId'=>config('app.merchant_id')],$this->createChallenge($arr));
         $payload = \base64_encode(\serialize($mergingArr));
-        $test = \base64_decode($payload);
-        $backToArray = \Log::info(\unserialize($test));
+        // $test = \base64_decode($payload);
+        // $backToArray = \Log::info(\unserialize($test));
         return ['payload'=>$payload];
     }
 
@@ -49,17 +49,23 @@ class AuthController
     {
         $ipAddress = '127.0.0.1';
         $platformId = \App\Enums\PlayerSourceEnum::from('direct')->value;
+        $encodedPayload = $request->get('payload') ?? \abort(503);
+        $decodedPayload = \base64_decode($encodedPayload);
+        $payload = \unserialize($decodedPayload);
+        if(! $this->checkHash($payload['username'],$payload['hash'])){
+            abort(503);
+        }
         try {
-            $player = Player::where('wl_player_username',$request->username)->firstOrCreate([
-                'wl_player_username' => $request->username
+            $player = Player::where('wl_player_username',$payload['username'])->firstOrCreate([
+                'wl_player_username' => $payload['username']
             ], [
-                Player::PLAYER_PHONE_NUMBER => $request->username.'123',
+                Player::PLAYER_PHONE_NUMBER => $payload['username'].'123',
                 Player::PLAYER_PASSWORD => bcrypt('123123'),
                 'last_login' => \Carbon\Carbon::now(config('app.timezone')),
                 Player::PLAYER_GROUP_ID => null,
                 'registered_from_platform' => $platformId,
                 'last_login_from_platform' => \Carbon\Carbon::now(config('app.timezone')),
-                Player::PLAYER_FULLNAME => $request->username,
+                Player::PLAYER_FULLNAME => $payload['username'],
                 Player::PLAYER_REGISTER_IP => $ipAddress,
                 Player::PLAYER_LAST_LOGIN_IP => $ipAddress,
             ]);
@@ -87,5 +93,11 @@ class AuthController
     public function demoInitAuth()
     {
         return view('waident::index',['merchantId'=>config('app.merchant_id')]);
+    }
+
+    private function checkHash($username,$hash)
+    {
+        $hashCheck = \crypt(\serialize(['username'=>$username]), config("app.merchant_api_salt_key"));
+        return $hash === $hashCheck;
     }
 }
