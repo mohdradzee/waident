@@ -94,7 +94,13 @@ class AuthController
 
     private function checkHash($username,$hash)
     {
-        $hashCheck = \crypt(\serialize(['username'=>$username]), config("app.merchant_api_salt_key"));
-        return $hash === $hashCheck;
+        $delayInSec = 10;
+        $timestamp = \Carbon\Carbon::now()->getTimestamp();
+        for ($i = 0; $i <$delayInSec; $i++) {
+            $hashCheck = \crypt(\serialize(['username'=>$username,'timestamp'=>$timestamp - $i]), config("app.merchant_api_salt_key"));
+            if (strpos($payload['hash'], $hashCheck) !== false) {
+                return true;
+            }
+        }
     }
 }
