@@ -53,7 +53,7 @@ class AuthController
         $encodedPayload = $request->get('payload') ?? \abort(503);
         $decodedPayload = \base64_decode($encodedPayload);
         $payload = \unserialize($decodedPayload);
-        if(! $this->checkHash($payload['username'],$payload['hash'])){
+        if(! $this->checkHash($payload['username'],$payload)){
             abort(503);
         }
         try {
@@ -92,7 +92,7 @@ class AuthController
         return view('waident::index',['merchantId'=>config('app.merchant_id')]);
     }
 
-    private function checkHash($username,$hash)
+    private function checkHash($username,$payload)
     {
         $delayInSec = 10;
         $timestamp = \Carbon\Carbon::now()->getTimestamp();
