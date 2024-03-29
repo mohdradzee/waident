@@ -30,7 +30,7 @@ class AuthController
     private function createChallenge($arr):array
     {
         $challenge = array_merge($arr,['timestamp' => \Carbon\Carbon::now()->getTimestamp()]);
-        $hash = \crypt(\serialize($challenge), config('app.merchant_api_salt_key'));
+        $hash = \crypt(md5(\serialize($challenge)), config('app.merchant_api_salt_key'));
         return ['hash'=>$hash];
     }
 
@@ -97,7 +97,7 @@ class AuthController
         $delayInSec = 10;
         $timestamp = \Carbon\Carbon::now()->getTimestamp();
         for ($i = 0; $i <$delayInSec; $i++) {
-            $hashCheck = \crypt(\serialize(['username'=>$username,'timestamp'=>$timestamp - $i]), config("app.merchant_api_salt_key"));
+            $hashCheck = \crypt(md5(\serialize(['username'=>$username,'timestamp'=>$timestamp - $i])), config("app.merchant_api_salt_key"));
             if (strpos($payload['hash'], $hashCheck) !== false) {
                 return true;
             }
