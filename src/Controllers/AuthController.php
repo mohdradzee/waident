@@ -4,12 +4,14 @@ namespace Mohdradzee\Waident\Controllers;
 use App\Components\Modules\Player\Player;
 use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mohdradzee\Waident\Requests\PasskeyAuthInitRequest;
 use Util;
 class AuthController
 {
     /**
      * checkPlayerUsername
+     * 
      * Prior to initiate passkey authentication/registration 
      * we check whether the player username exists
      * @param  Request  $request
@@ -19,8 +21,11 @@ class AuthController
         if ($request->ajax()) {
             try{
                 $player = config('waident.playerModel')::where('wl_player_username',$request->username)->firstOrFail();
+                if($player->registered_from_platform != 2){
+                    throw new \Exception('Player not registered via passkey OR not linked with a passkey');
+                }
                 return response()->json($this->createPayload($request->all()),200);//will attempt authentication
-            }catch(\Exception $e){
+            }catch(ModelNotFoundException $e){
                 return response()->json($this->createPayload($request->all()),400);//will attempt to create new player
             }
         }
@@ -49,7 +54,7 @@ class AuthController
     public function authenticate(Request $request)
     {
         $ipAddress = '127.0.0.1';
-        $platformId = \App\Enums\PlayerSourceEnum::from('direct')->value;
+        $platformId = \App\Enums\PlayerSourceEnum::from('passkey')->value;
         $encodedPayload = $request->get('payload') ?? \abort(503);
         $decodedPayload = \base64_decode($encodedPayload);
         $payload = \unserialize($decodedPayload);
