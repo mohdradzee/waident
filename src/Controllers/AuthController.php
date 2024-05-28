@@ -21,15 +21,17 @@ class AuthController
         if ($request->ajax()) {
             try{
                 $player = config('waident.playerModel')::where('wl_player_username',$request->username)->firstOrFail();
-                if($player->registered_from_platform != 2){
+                if($player->registered_from_platform != \App\Enums\PlayerSourceEnum::from('passkey')->value){
                     throw new \Exception('Player not registered via passkey OR not linked with a passkey');
                 }
                 return response()->json($this->createPayload($request->all()),200);//will attempt authentication
             }catch(ModelNotFoundException $e){
                 return response()->json($this->createPayload($request->all()),400);//will attempt to create new player
+            }catch(\Exception $e){
+                return response()->json(['error'=>'error'],500);//won't create new player
             }
         }
-        return response()->json(['Bad request'], 500);
+        return response()->json(['Bad request'], 500);//won't create new player
     }
 
     private function createChallenge($arr):array
